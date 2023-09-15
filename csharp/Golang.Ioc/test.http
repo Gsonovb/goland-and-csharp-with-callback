@@ -1,0 +1,21 @@
+
+# Test Callback1
+GET http://localhost:9081/callback1
+
+
+
+
+### Test POST Callback2
+
+POST http://localhost:9081/callback1
+Content-Type: application/json
+
+{
+    "eventId": "123456",
+    "eventName":"TestEvent",
+    "eventTime":"1234567891",
+    "userAppId":"1234567890",
+    "eventData": "Test Data"
+
+}
+

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Golang.Ioc": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
