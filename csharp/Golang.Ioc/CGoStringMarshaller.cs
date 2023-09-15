@@ -50,8 +50,12 @@ internal static unsafe class CGoStringMarshaller
 
     /// <summary>
     /// Converts an unmanaged string to a managed version.
+    /// 转换非托管字符串为托管版本
     /// </summary>
-    /// <param name="unmanaged">The unmanaged string to convert.</param>
+    /// <param name="unmanaged">
+    /// The unmanaged string to convert.
+    /// 要转换的非托管字符串
+    /// </param>
     /// <returns>A managed string.</returns>
     public static string? ConvertToManaged(byte* unmanaged)
     {
@@ -84,8 +88,12 @@ internal static unsafe class CGoStringMarshaller
 /// Marshaller for UTF-8 strings.
 /// </summary>
 [CustomMarshaller(typeof(string), MarshalMode.Default, typeof(CustomStringMarshaller))]
-[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedIn, typeof(ManagedToUnmanagedIn))]
-[CustomMarshaller(typeof(string), MarshalMode.UnmanagedToManagedIn, typeof(NativeToManaged))]
+[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedIn, typeof(StatefulManagedToUnmanagedIn))]
+[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedOut, typeof(ManagedToNativeOut))]
+[CustomMarshaller(typeof(string), MarshalMode.UnmanagedToManagedIn, typeof(NativeToManagedIn))]
+[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedOut, typeof(NativeToManagedOut))]
+[CustomMarshaller(typeof(string), MarshalMode.ElementIn, typeof(ElementIn))]
+[CustomMarshaller(typeof(string), MarshalMode.ElementOut, typeof(ElementOut))]
 internal static unsafe class CustomStringMarshaller
 {
     /// <summary>
@@ -170,7 +178,7 @@ internal static unsafe class CustomStringMarshaller
     /// custom marshaller to marshal a managed string as a UTF-8 unmanaged string.
     /// 自定义转换器,将托管字符串转换为非托管UTF-8字符串
     /// </summary>
-    public static class NativeToManaged
+    public static class NativeToManagedIn
     {
 
         /// <summary>
@@ -190,8 +198,8 @@ internal static unsafe class CustomStringMarshaller
             // 获取 内存地址 值
             IntPtr ptr = (IntPtr)(unmanaged);
 
-            Trace.WriteLine("CustomStringMarshaller: NativeToManaged start, prt:" + ptr.ToString("X"));
-            Log.Information("CustomStringMarshaller: NativeToManaged start, unmanaged prt: {address}", ptr.ToString("X"));
+            Trace.WriteLine("CustomStringMarshaller: NativeToManagedIn.ConvertToManaged start, prt:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: NativeToManagedIn.ConvertToManaged start, unmanaged prt: {address}", ptr.ToString("X"));
 
             return Marshal.PtrToStringUTF8((IntPtr)unmanaged);
         }
@@ -208,8 +216,8 @@ internal static unsafe class CustomStringMarshaller
         {
             // 获取 内存地址 值
             IntPtr ptr = (IntPtr)(unmanaged);
-            Trace.WriteLine("CustomStringMarshaller: NativeToManaged.Free start , prt: " + ptr.ToString("X"));
-            Log.Information("CustomStringMarshaller: NativeToManaged.Free start, prt: {address}", ptr.ToString("X"));
+            Trace.WriteLine("CustomStringMarshaller: NativeToManagedIn.Free start , prt: " + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: NativeToManagedIn.Free start, prt: {address}", ptr.ToString("X"));
 
             NativeLib.Free((IntPtr)unmanaged); // Here is native free from CGO ; 这里是CGO中的本地释放;
         }
@@ -218,10 +226,60 @@ internal static unsafe class CustomStringMarshaller
 
 
     /// <summary>
-    /// Custom marshaller to marshal a managed string as a UTF-8 unmanaged string.
+    /// custom marshaller to marshal a managed string as a UTF-8 unmanaged string.
     /// 自定义转换器,将托管字符串转换为非托管UTF-8字符串
     /// </summary>
-    public ref struct ManagedToUnmanagedIn
+    public static class NativeToManagedOut
+    {
+
+        /// <summary>
+        /// Converts an unmanaged string to a managed version.
+        /// 转换非托管字符串为托管版本
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The unmanaged string to convert.
+        /// 要转换的非托管字符串
+        /// </param>
+        /// <returns>
+        /// A managed string.
+        /// 一个托管字符串
+        /// </returns>
+        public static string? ConvertToManaged(byte* unmanaged)
+        {
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+
+            Trace.WriteLine("CustomStringMarshaller: NativeToManagedOut.ConvertToManaged start, prt:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: NativeToManagedOut.ConvertToManaged start, unmanaged prt: {address}", ptr.ToString("X"));
+
+            return Marshal.PtrToStringUTF8((IntPtr)unmanaged);
+        }
+
+        /// <summary>
+        /// Free the memory for a specified unmanaged string.
+        /// 释放非托管字符串的内存
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The memory allocated for the unmanaged string.
+        /// 为非托管字符串分配的内存地址
+        /// </param>
+        public static void Free(byte* unmanaged)
+        {
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+            Trace.WriteLine("CustomStringMarshaller: NativeToManagedOut.Free start , prt: " + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: NativeToManagedOut.Free start, prt: {address}", ptr.ToString("X"));
+
+            NativeLib.Free((IntPtr)unmanaged); // Here is native free from CGO ; 这里是CGO中的本地释放;
+        }
+
+    }
+
+    /// <summary>
+    /// Custom stateful marshaller to marshal a managed string as a UTF-8 unmanaged string.
+    /// 自定义有状态转换器,将托管字符串转换为非托管UTF-8字符串
+    /// </summary>
+    public ref struct StatefulManagedToUnmanagedIn
     {
         /// <summary>
         /// Gets the requested buffer size for optimized marshalling.
@@ -267,6 +325,7 @@ internal static unsafe class CustomStringMarshaller
             // 使用long类型转换避免检查操作
             if ((long)MaxUtf8BytesPerChar * managed.Length >= buffer.Length)
             {
+
                 // Calculate accurate byte count when the provided stack-allocated buffer is not sufficient
                 // 当提供的栈分配缓冲区不足时,计算准确的字节数
                 int exactByteCount = checked(Encoding.UTF8.GetByteCount(managed) + 1); // + 1 for null terminator ; +1 用于空终止符
@@ -274,6 +333,9 @@ internal static unsafe class CustomStringMarshaller
                 {
                     buffer = new Span<byte>((byte*)NativeMemory.Alloc((nuint)exactByteCount), exactByteCount);
                     _allocated = true;
+
+                    Trace.WriteLine("CustomStringMarshaller: ManagedToUnmanagedIn.FromManaged Alloc memory");
+                    Log.Information("CustomStringMarshaller: ManagedToUnmanagedIn.FromManaged Alloc memory");
                 }
             }
 
@@ -329,4 +391,223 @@ internal static unsafe class CustomStringMarshaller
             }
         }
     }
+
+    /// <summary>
+    /// Custom Stateless  marshaller to marshal a managed string as a UTF-8 unmanaged string.
+    /// 自定义无状态转换器,将托管字符串转换为非托管UTF-8字符串
+    /// </summary>
+    public static class ManagedToNativeOut
+    {
+
+
+        /// <summary>
+        /// Free the memory for a specified unmanaged string.
+        /// 释放非托管字符串的内存
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The memory allocated for the unmanaged string.
+        /// 为非托管字符串分配的内存地址
+        /// </param>
+        public static void Free(byte* unmanaged)
+        {
+
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+            Trace.WriteLine("CustomStringMarshaller: ManagedToNativeOut.Free start , prt: " + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: ManagedToNativeOut.Free start, prt: {address}", ptr.ToString("X"));
+
+            //Marshal.FreeCoTaskMem((IntPtr)unmanaged);// this can't free NativeLib memory ; 这里不能释放NativeLib中的内存 
+            NativeLib.Free((IntPtr)unmanaged); // Here is native free from CGO ; 这里是CGO中的本地释放;
+
+
+        }
+
+
+        /// <summary>
+        /// Converts an unmanaged string to a managed version.
+        /// 转换非托管字符串为托管版本
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The unmanaged string to convert.
+        /// 要转换的非托管字符串
+        /// </param>
+        /// <returns>
+        /// A managed string.
+        /// 一个托管字符串
+        /// </returns>
+        public static string? ConvertToManaged(byte* unmanaged)
+        {
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+
+            Trace.WriteLine("CustomStringMarshaller: ManagedToNativeOut.ConvertToManaged start, prt:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: ManagedToNativeOut.ConvertToManaged start, unmanaged prt: {address}", ptr.ToString("X"));
+
+            return Marshal.PtrToStringUTF8((IntPtr)unmanaged);
+        }
+    }
+
+    internal static unsafe class ElementIn
+    {
+        /// <summary>
+        /// Converts a string to an unmanaged version.
+        /// 转换字符串为非托管版本
+        /// </summary>
+        /// <param name="managed">
+        /// The managed string to convert.
+        /// 要转换的托管字符串
+        /// </param>
+        /// <returns>
+        /// An unmanaged string.
+        /// 一个非托管字符串
+        /// </returns>
+        public static byte* ConvertToUnmanaged(string? managed)
+        {
+            Trace.WriteLine("CustomStringMarshaller: ElementIn.ConvertToUnmanaged start");
+            Log.Information("CustomStringMarshaller: ElementIn.ConvertToUnmanaged start");
+
+            if (managed is null)
+                return null;
+
+            int exactByteCount = checked(Encoding.UTF8.GetByteCount(managed) + 1); // + 1 for null terminator
+            byte* mem = (byte*)Marshal.AllocCoTaskMem(exactByteCount);
+            Span<byte> buffer = new(mem, exactByteCount);
+
+            int byteCount = Encoding.UTF8.GetBytes(managed, buffer);
+            buffer[byteCount] = 0; // null-terminate
+
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(mem);
+
+            Trace.WriteLine("CustomStringMarshaller: ElementIn.ConvertToUnmanaged end, ptr:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: OnConvertToUnmanaged end , ptr: {address}", ptr.ToString("X"));
+
+            return mem;
+        }
+
+        /// <summary>
+        /// Converts an unmanaged string to a managed version.
+        /// 转换非托管字符串为托管版本
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The unmanaged string to convert.
+        /// 要转换的非托管字符串
+        /// </param>
+        /// <returns>
+        /// A managed string.
+        /// 一个托管字符串
+        /// </returns>
+        public static string? ConvertToManaged(byte* unmanaged)
+        {
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+
+            Trace.WriteLine("CustomStringMarshaller: OnConvertToManaged start, prt:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: OnConvertToManaged start, unmanaged prt: {address}", ptr.ToString("X"));
+
+            return Marshal.PtrToStringUTF8((IntPtr)unmanaged);
+        }
+
+        /// <summary>
+        /// Free the memory for a specified unmanaged string.
+        /// 释放非托管字符串的内存
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The memory allocated for the unmanaged string.
+        /// 为非托管字符串分配的内存地址
+        /// </param>
+        public static void Free(byte* unmanaged)
+        {
+
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+            Trace.WriteLine("CustomStringMarshaller: OnFree start , prt: " + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: OnFree start, prt: {address}", ptr.ToString("X"));
+
+            Marshal.FreeCoTaskMem((IntPtr)unmanaged);// this can't free NativeLib memory ; 这里不能释放NativeLib中的内存 
+        }
+    }
+
+
+    internal static unsafe class ElementOut
+    {
+        /// <summary>
+        /// Converts a string to an unmanaged version.
+        /// 转换字符串为非托管版本
+        /// </summary>
+        /// <param name="managed">
+        /// The managed string to convert.
+        /// 要转换的托管字符串
+        /// </param>
+        /// <returns>
+        /// An unmanaged string.
+        /// 一个非托管字符串
+        /// </returns>
+        public static byte* ConvertToUnmanaged(string? managed)
+        {
+            Trace.WriteLine("CustomStringMarshaller: ElementIn.ConvertToUnmanaged start");
+            Log.Information("CustomStringMarshaller: ElementIn.ConvertToUnmanaged start");
+
+            if (managed is null)
+                return null;
+
+            int exactByteCount = checked(Encoding.UTF8.GetByteCount(managed) + 1); // + 1 for null terminator
+            byte* mem = (byte*)Marshal.AllocCoTaskMem(exactByteCount);
+            Span<byte> buffer = new(mem, exactByteCount);
+
+            int byteCount = Encoding.UTF8.GetBytes(managed, buffer);
+            buffer[byteCount] = 0; // null-terminate
+
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(mem);
+
+            Trace.WriteLine("CustomStringMarshaller: ElementIn.ConvertToUnmanaged end, ptr:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: OnConvertToUnmanaged end , ptr: {address}", ptr.ToString("X"));
+
+            return mem;
+        }
+
+        /// <summary>
+        /// Converts an unmanaged string to a managed version.
+        /// 转换非托管字符串为托管版本
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The unmanaged string to convert.
+        /// 要转换的非托管字符串
+        /// </param>
+        /// <returns>
+        /// A managed string.
+        /// 一个托管字符串
+        /// </returns>
+        public static string? ConvertToManaged(byte* unmanaged)
+        {
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+
+            Trace.WriteLine("CustomStringMarshaller: OnConvertToManaged start, prt:" + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: OnConvertToManaged start, unmanaged prt: {address}", ptr.ToString("X"));
+
+            return Marshal.PtrToStringUTF8((IntPtr)unmanaged);
+        }
+
+        /// <summary>
+        /// Free the memory for a specified unmanaged string.
+        /// 释放非托管字符串的内存
+        /// </summary>
+        /// <param name="unmanaged">
+        /// The memory allocated for the unmanaged string.
+        /// 为非托管字符串分配的内存地址
+        /// </param>
+        public static void Free(byte* unmanaged)
+        {
+
+            // 获取 内存地址 值
+            IntPtr ptr = (IntPtr)(unmanaged);
+            Trace.WriteLine("CustomStringMarshaller: OnFree start , prt: " + ptr.ToString("X"));
+            Log.Information("CustomStringMarshaller: OnFree start, prt: {address}", ptr.ToString("X"));
+
+            Marshal.FreeCoTaskMem((IntPtr)unmanaged);// this can't free NativeLib memory ; 这里不能释放NativeLib中的内存 
+        }
+    }
 }
+

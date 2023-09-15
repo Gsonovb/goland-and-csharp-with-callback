@@ -56,11 +56,18 @@ func GetSlogan(name *C.char) *C.char {
 
 	// 转换成uintptr
 	adr := uintptr(unsafe.Pointer(name))
-	log.Print("GO: ", "GetSlogan name adr:"+fmt.Sprintf("%x", adr))
+	log.Print("GO: ", "GetSlogan name [in] adr:"+fmt.Sprintf("%x", adr))
 
 	goName := C.GoString(name)
 	goSlogan := "这里是是Go，你好!" + goName + "我们一起为武汉加油！"
-	return C.CString(goSlogan)
+
+	res := C.CString(goSlogan)
+
+	adr2 := uintptr(unsafe.Pointer(res))
+
+	log.Print("GO: ", "GetSlogan return  [out] adr:"+fmt.Sprintf("%x", adr2))
+
+	return res
 }
 
 //export Free
@@ -220,8 +227,9 @@ func InitCallBack1(cb unsafe.Pointer, port int) {
 // 发送回调函数1
 func SendCallBack1(json string) {
 
-	// 获取 字符串 C++ 指针
+	log.Print("GO: ", "SendCallBack1:  start  ", json)
 
+	// 获取 字符串 C++ 指针
 	var pdata = unsafe.Pointer(C.CString(json))
 	log.Print("GO: ", "SendCallBack1: Get string Pointer ", fmt.Sprintf("%x", uintptr(pdata)))
 
@@ -328,6 +336,8 @@ func InitCallBack2(cb unsafe.Pointer, port int) {
 
 // 发送回调函数2
 func SendCallBack2(json string) {
+
+	log.Print("GO: ", "SendCallBack2:  start  ", json)
 
 	// 获取 字符串 C++ 指针
 
@@ -454,6 +464,8 @@ func InitCallBack3(cb unsafe.Pointer, port int) {
 
 // 发送回调函数3
 func SendCallBack3(event CallbackEventData) {
+
+	log.Print("GO: ", "SendCallBack3:  start  ")
 
 	// C结构体
 	var cEvent C.CallbackEventData

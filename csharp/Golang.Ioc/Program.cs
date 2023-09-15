@@ -37,13 +37,11 @@ namespace Golang.Ioc
 
 
             Console.WriteLine("==================");
-
-            InitCallBack1();
-
             Console.WriteLine("输入任意字符开始测试回调函数1");
 
             Console.ReadLine();
 
+            InitCallBack1();
             DoTestCallBack1();
 
 
@@ -51,11 +49,10 @@ namespace Golang.Ioc
     
             Console.WriteLine("==================");
             Console.WriteLine("输入任意字符开始测试回调函数2");
+            Console.ReadLine();
 
             InitCallBack2();
 
-
-            Console.ReadLine();
 
             DoTestCallBack2();
 
@@ -84,7 +81,7 @@ namespace Golang.Ioc
         private static void DoTestCallBack2()
         {
             Log.Information("测试 TestCallBack2 开始 !");
-            NativeLib.TestCallBack1();
+            NativeLib.TestCallBack2();
             Log.Information("测试 TestCallBack2 完成 !");
         }
 

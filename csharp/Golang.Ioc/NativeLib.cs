@@ -73,8 +73,9 @@ public struct CallBackEventData
 // 回调函数1指针
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void CallBack1(
-    //[MarshalUsing(typeof(CustomStringMarshaller))]
+    [MarshalUsing(typeof(CustomStringMarshaller))]
     //[MarshalAs(UnmanagedType.LPTStr)]
+    //[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(CustomStringMarshaller))]
     string data
     );
 
@@ -82,7 +83,7 @@ public delegate void CallBack1(
 // 回调函数2 C字符数组指针
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void CallBack2(
-    [MarshalAs(UnmanagedType.LPWStr)]
+    [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(CustomStringMarshaller))]
     string data
     );
 //[MarshalAs(UnmanagedType.LPStr)]

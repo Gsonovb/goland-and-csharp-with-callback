@@ -14,7 +14,7 @@ LogDelegate _cbLog = NULL;
 
 // 定义日志记录函数
 void Log(char* msg) {
-    printf("C: %s\n", msg);
+    //printf("C: %s\n", msg);
     if (_cbLog == NULL) {
         printf("C : LogDelegate is null\n");
         return;
@@ -55,7 +55,7 @@ void RegisterCallBack3(CallBack3 cb) {
 // 定义调用委托函数
 
 void CallCallBack1(void* p) {
-    Log("OnCall_CallBack1");
+    Log("OnCall_CallBack1 start");
     //检测指针是否分配
     if (_cb1 == NULL) {
         Log("CallBack1 is null");
@@ -77,7 +77,7 @@ void CallCallBack1(void* p) {
 
 
 void CallCallBack2(char* p) {
-    Log("OnCall_CallBack2");
+    Log("OnCall_CallBack2 start");
     //检测指针是否分配
     if (_cb2 == NULL) {
         Log("CallBack2 is null");
@@ -96,7 +96,7 @@ void CallCallBack2(char* p) {
 }
 
 void CallCallBack3(CallbackEventData* p) {
-    Log("OnCall_CallBack3");
+    Log("OnCall_CallBack3 start");
     //检测指针是否分配
     if (_cb3 == NULL) {
         Log("CallBack3 is null");
