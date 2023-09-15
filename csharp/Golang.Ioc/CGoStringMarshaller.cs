@@ -163,8 +163,7 @@ internal static unsafe class CustomStringMarshaller
         Trace.WriteLine("CustomStringMarshaller: OnFree start , prt: " + ptr.ToString("X"));
         Log.Information("CustomStringMarshaller: OnFree start, prt: {address}", ptr.ToString("X"));
 
-
-        Marshal.FreeCoTaskMem((IntPtr)unmanaged);
+        Marshal.FreeCoTaskMem((IntPtr)unmanaged);// this can't free NativeLib memory ; 这里不能释放NativeLib中的内存 
     }
 
     /// <summary>
