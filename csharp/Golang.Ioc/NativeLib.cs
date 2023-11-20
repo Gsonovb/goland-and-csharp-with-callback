@@ -58,24 +58,11 @@ public struct CallBackEvent
 
 
 
-[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-public struct CallBackEventData
-{
-    public int Id;
-
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
-    public string Name;
-
-}
-
-
-
 // 回调函数1指针
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void CallBack1(
-    [MarshalUsing(typeof(CustomStringMarshaller))]
-    //[MarshalAs(UnmanagedType.LPTStr)]
-    //[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(CustomStringMarshaller))]
+    //[MarshalUsing(typeof(CustomStringMarshaller))]
+    [MarshalAs(UnmanagedType.LPStr)]
     string data
     );
 
@@ -83,7 +70,7 @@ public delegate void CallBack1(
 // 回调函数2 C字符数组指针
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void CallBack2(
-    [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(CustomStringMarshaller))]
+    [MarshalAs(UnmanagedType.LPUTF8Str)] //这个显示正常,但是没有看到内存卸载
     string data
     );
 //[MarshalAs(UnmanagedType.LPStr)]
@@ -91,7 +78,7 @@ public delegate void CallBack2(
 
 // 回调函数3 C结构体指针
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void CallBack3([MarshalAs(UnmanagedType.LPStr)] CallBackEventData data);
+public delegate void CallBack3([MarshalUsing(typeof(CallBackEventDataMarshaller))]CallBackEventData data);
 
 
 
@@ -129,6 +116,7 @@ internal static partial class NativeLib
     [UnmanagedCallConv(CallConvs = new Type[] { typeof(CallConvCdecl) })]
     [LibraryImport(LibName, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(CustomStringMarshaller))]
     internal static partial void InitCallBack1(
+        [MarshalUsing(typeof(CustomStringMarshaller))]
         CallBack1 cb,
         long port);
 
@@ -136,12 +124,16 @@ internal static partial class NativeLib
     // 初始化 回调函数2 并设置 Gin2 实例 和端口
     // extern __declspec(dllexport) void InitCallBack2(void* cb, GoInt port);
     [LibraryImport(LibName, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(CustomStringMarshaller))]
-    internal static partial void InitCallBack2(CallBack2 cb, long port);
+    internal static partial void InitCallBack2(
+        [MarshalUsing(typeof(CustomStringMarshaller))]
+        CallBack2 cb, long port);
 
     // 初始化 回调函数3 并设置 Gin3 实例 和端口
     // extern __declspec(dllexport) void InitCallBack3(void* cb, GoInt port);
     [LibraryImport(LibName, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(CustomStringMarshaller))]
-    internal static partial void InitCallBack3(CallBack3 cb, long port);
+    internal static partial void InitCallBack3(
+        [MarshalUsing(typeof(CustomStringMarshaller))]
+        CallBack3 cb, long port);
 
 
     // 测试回调函数

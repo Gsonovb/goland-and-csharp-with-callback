@@ -14,6 +14,7 @@ typedef void (*CallBack2)(char*);
 typedef struct {
     int id;
     char name[20];
+    char *data;
 } CallbackEventData;
 
 

@@ -91,6 +91,7 @@ type EventData struct {
 type CallbackEventData struct {
 	Id   int    `json:"id"`   //id
 	Name string `json:"name"` //name
+	Data string `json:"data"` //data
 }
 
 // 定义全局 Gin1 实例变量
@@ -403,63 +404,63 @@ func InitCallBack3(cb unsafe.Pointer, port int) {
 	}
 
 	//_cb3 = cb
-	_gin3 = gin.Default()
-	_gin3.GET("/callback3", func(c *gin.Context) {
-		log.Print("GO: ", "GET callback3 is Called")
+	// _gin3 = gin.Default()
+	// _gin3.GET("/callback3", func(c *gin.Context) {
+	// 	log.Print("GO: ", "GET callback3 is Called")
 
-		c.JSON(200, gin.H{
-			"message": "callback3 is Called",
-		})
-	})
+	// 	c.JSON(200, gin.H{
+	// 		"message": "callback3 is Called",
+	// 	})
+	// })
 
-	// 定义一个 POST 请求的路由 , 并获取BODY文本数据,并传入回调函数
-	_gin3.POST("/callback3", func(c *gin.Context) {
+	// // 定义一个 POST 请求的路由 , 并获取BODY文本数据,并传入回调函数
+	// _gin3.POST("/callback3", func(c *gin.Context) {
 
-		//check body is not null
-		if c.Request.Body == nil {
-			c.JSON(400, gin.H{
-				"message": "no body Request",
-			})
-			return
-		}
+	// 	//check body is not null
+	// 	if c.Request.Body == nil {
+	// 		c.JSON(400, gin.H{
+	// 			"message": "no body Request",
+	// 		})
+	// 		return
+	// 	}
 
-		//获取请求内容
-		var event EventData
-		err := c.BindJSON(&event)
+	// 	//获取请求内容
+	// 	var event EventData
+	// 	err := c.BindJSON(&event)
 
-		if err != nil {
-			c.JSON(400, gin.H{
-				"message": "Bad Request error data",
-			})
-			return
-		}
+	// 	if err != nil {
+	// 		c.JSON(400, gin.H{
+	// 			"message": "Bad Request error data",
+	// 		})
+	// 		return
+	// 	}
 
-		//log + event
-		log.Print("GO: ", "POST callback3 is Called,"+event.EventName+",data:"+event.EventData)
+	// 	//log + event
+	// 	log.Print("GO: ", "POST callback3 is Called,"+event.EventName+",data:"+event.EventData)
 
-		// // C结构体
-		// var cEvent C.CallBackEvent
+	// 	// // C结构体
+	// 	// var cEvent C.CallBackEvent
 
-		// GoStringToCChar(event.EventId, &cEvent.EventId[0], 64)
-		// GoStringToCChar(event.EventName, &cEvent.EventName[0], 32)
-		// GoStringToCChar(event.EventTime, &cEvent.EventTime[0], 64)
-		// GoStringToCChar(event.UserAppId, &cEvent.UserAppId[0], 64)
+	// 	// GoStringToCChar(event.EventId, &cEvent.EventId[0], 64)
+	// 	// GoStringToCChar(event.EventName, &cEvent.EventName[0], 32)
+	// 	// GoStringToCChar(event.EventTime, &cEvent.EventTime[0], 64)
+	// 	// GoStringToCChar(event.UserAppId, &cEvent.UserAppId[0], 64)
 
-		// cEvent.EventData = C.CString(event.EventData)
+	// 	// cEvent.EventData = C.CString(event.EventData)
 
-		// 创建指针
-		//var pEvent = &cEvent
+	// 	// 创建指针
+	// 	//var pEvent = &cEvent
 
-		// 调用回调函数
-		//go _cb3(pEvent)
+	// 	// 调用回调函数
+	// 	//go _cb3(pEvent)
 
-		// 返回响应
-		c.JSON(200, gin.H{
-			"message": "OK",
-		})
-	})
+	// 	// 返回响应
+	// 	c.JSON(200, gin.H{
+	// 		"message": "OK",
+	// 	})
+	// })
 
-	go _gin3.Run(fmt.Sprintf(":%d", port))
+	// go _gin3.Run(fmt.Sprintf(":%d", port))
 }
 
 // 发送回调函数3
@@ -500,6 +501,7 @@ func TestCallBack3() {
 	var event CallbackEventData
 	event.Id = 1
 	event.Name = "TestCallBack3,测试回调3"
+	event.Data = "这是来自 TestCallBack3 的测试！"
 
 	SendCallBack3(event)
 

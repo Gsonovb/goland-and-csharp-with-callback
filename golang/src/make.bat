@@ -3,11 +3,12 @@ set GOARCH=amd64
 set CGO_ENABLED=1
 
 
-gcc -c mycallback.c -o mycallback.o
+gcc -g -c mycallback.c -o mycallback.o
 ar cr libmycallback.a mycallback.o
 
 
 @REM go build -ldflags "-s -w" -buildmode=c-shared -o Golang.Ioc.Interop.dll main.go
 
 
-go build -ldflags "-s -w" -buildmode=c-shared -o Golang.Ioc.Interop.dll 
+@REM go build -ldflags "-s -w" -g -buildmode=c-shared -o Golang.Ioc.Interop.dll 
+go build -ldflags "-s -w" -gcflags "-N -l" -buildmode=c-shared -o Golang.Ioc.Interop.dll

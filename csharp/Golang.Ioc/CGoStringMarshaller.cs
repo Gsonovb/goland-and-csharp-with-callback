@@ -394,7 +394,7 @@ internal static unsafe class CustomStringMarshaller
 
     /// <summary>
     /// Custom Stateless  marshaller to marshal a managed string as a UTF-8 unmanaged string.
-    /// 自定义无状态转换器,将托管字符串转换为非托管UTF-8字符串
+    /// 自定义无状态转换器,将非托管字符串转换为托管UTF-8字符串
     /// </summary>
     public static class ManagedToNativeOut
     {

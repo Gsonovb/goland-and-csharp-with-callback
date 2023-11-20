@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices.Marshalling;
 using Serilog;
 
 
@@ -36,29 +37,36 @@ namespace Golang.Ioc
             InitLog();
 
 
-            Console.WriteLine("==================");
-            Console.WriteLine("输入任意字符开始测试回调函数1");
+            // Console.WriteLine("==================");
+            // Console.WriteLine("输入任意字符开始测试回调函数1");
 
+            // Console.ReadLine();
+
+            // InitCallBack1();
+            // DoTestCallBack1();
+
+
+
+
+            // Console.WriteLine("==================");
+            // Console.WriteLine("输入任意字符开始测试回调函数2");
+            // Console.ReadLine();
+
+            // InitCallBack2();
+
+
+            // DoTestCallBack2();
+
+
+
+            Console.WriteLine("==================");
+            Console.WriteLine("输入任意字符开始测试回调函数3");
             Console.ReadLine();
 
-            InitCallBack1();
-            DoTestCallBack1();
 
+            InitCallBack3();
 
-
-    
-            Console.WriteLine("==================");
-            Console.WriteLine("输入任意字符开始测试回调函数2");
-            Console.ReadLine();
-
-            InitCallBack2();
-
-
-            DoTestCallBack2();
-
-
-
-
+            DoTestCallBack3();
 
 
 
@@ -85,6 +93,12 @@ namespace Golang.Ioc
             Log.Information("测试 TestCallBack2 完成 !");
         }
 
+        private static void DoTestCallBack3()
+        { 
+            Log.Information("测试 TestCallBack3 开始 !");
+            NativeLib.TestCallBack3();
+            Log.Information("测试 TestCallBack3 完成 !");
+        }
 
 
         /// <summary>
@@ -145,6 +159,7 @@ namespace Golang.Ioc
             Log.Information("Call InitCallBack2 end");
 
         }
+
 
         private static void OnCallBack2(string data)
         {
