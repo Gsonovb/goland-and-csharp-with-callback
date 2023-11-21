@@ -1,5 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using System.Text;
 using Serilog;
 
 
@@ -68,6 +71,15 @@ namespace Golang.Ioc
 
             DoTestCallBack3();
 
+            Console.WriteLine("==================");
+            Console.WriteLine("输入任意字符开始测试回调函数4");
+            Console.ReadLine();
+
+
+            InitCallBack4();
+
+            DoTestCallBack4();
+
 
 
             Console.WriteLine("按回车键结束");
@@ -93,12 +105,6 @@ namespace Golang.Ioc
             Log.Information("测试 TestCallBack2 完成 !");
         }
 
-        private static void DoTestCallBack3()
-        { 
-            Log.Information("测试 TestCallBack3 开始 !");
-            NativeLib.TestCallBack3();
-            Log.Information("测试 TestCallBack3 完成 !");
-        }
 
 
         /// <summary>
@@ -163,7 +169,7 @@ namespace Golang.Ioc
 
         private static void OnCallBack2(string data)
         {
-            //Console.WriteLine($"C#: OnCallBack2:{data}");
+            //Console.WriteLine($"C#: OnCallBack2:{dPtr}");
             Log.Information("C#: OnCallBack2:{data}", data);
         }
 
@@ -185,22 +191,127 @@ namespace Golang.Ioc
         }
 
 
-        private static void OnCallBack3(CallBackEventData data)
+        private static void OnCallBack3([MarshalUsing(typeof(CallBackEventDataMarshaller))] CallBackEventData data)
         {
             Log.Information("C#: OnCallBack3: {data}", data);
 
             // Console.WriteLine($"C#: OnCallBack3: ");
 
-            // Console.WriteLine($"C#: EventId  :{data.EventId}");
-            // Console.WriteLine($"C#: EventName:{data.EventName}");
-            // Console.WriteLine($"C#: EventTime:{data.EventTime}");
-            // Console.WriteLine($"C#: UserAppId:{data.UserAppId}");
+            // Console.WriteLine($"C#: EventId  :{dPtr.EventId}");
+            // Console.WriteLine($"C#: EventName:{dPtr.EventName}");
+            // Console.WriteLine($"C#: EventTime:{dPtr.EventTime}");
+            // Console.WriteLine($"C#: UserAppId:{dPtr.UserAppId}");
 
             // Console.WriteLine($"C#: EventData:");
-            // Console.WriteLine($"C#:      ANSI:{data.GetEventData()}");
-            // Console.WriteLine($"C#:   Unicode:{data.GetEventDataUnicode()}");
-            // Console.WriteLine($"C#:     UTF-8:{data.GetEventDataUTF8()}");
+            // Console.WriteLine($"C#:      ANSI:{dPtr.GetEventData()}");
+            // Console.WriteLine($"C#:   Unicode:{dPtr.GetEventDataUnicode()}");
+            // Console.WriteLine($"C#:     UTF-8:{dPtr.GetEventDataUTF8()}");
 
+        }
+
+        private static void DoTestCallBack3()
+        {
+            Log.Information("测试 TestCallBack3 开始 !");
+            NativeLib.TestCallBack3();
+            Log.Information("测试 TestCallBack3 完成 !");
+        }
+
+
+        // 初始化 回调4
+
+        private static CallBack4 _cb4;
+
+        private static void InitCallBack4()
+        {
+            if (_cb4 != null)
+            {
+                return;
+            }
+            Log.Information("Call InitCallBack4");
+            _cb4 = new CallBack4(OnCallBack4);
+            NativeLib.InitCallBack4(_cb4, 9084);
+            Log.Information("Call InitCallBack4 end");
+        }
+
+        private unsafe static void OnCallBack4(IntPtr dPtr)  // CallBackEventData dPtr)
+        {
+            //log prt address
+            Log.Information("C#: OnCallBack4 prt: {prt}", dPtr.ToString("X"));
+
+
+            // get dPtr
+
+            CallBackEventData eventData = Marshal.PtrToStructure<CallBackEventData>(dPtr);
+
+            Log.Information("C#: OnCallBack4: {data}", eventData);
+
+
+
+            int memsize = Marshal.SizeOf<CallBackEventData>();
+            int memsize2 = Marshal.SizeOf<CallBackEventData2>();
+
+
+            ReadOnlySpan<byte> databytes = new(dPtr.ToPointer(), memsize);
+
+            //byte[] bytes = new byte[memsize];
+
+           // byte[] bytes =databytes.ToArray();
+
+            //    Marshal.Copy(dPtr, bytes, 0, bytes.Length);
+
+            // dPtr 020000005465737443616C6C4261636B342CE6B58BE8AF9500000000000000004087694AFB7F0000C086694AFB7F00004086694AFB7F0000
+            //Log.Information("C#: OnCallBack4: {data}", bytes);
+            Log.Information("C#: OnCallBack4: {data}", databytes.ToArray());
+
+            //read first int id from bytes 0 到sizeof(int)
+            //int id = Marshal.ReadInt32(dPtr, 0);
+
+            var index = 0;
+            //第一个字段 id
+
+            var part1 = databytes.Slice(index, sizeof(Int32));
+            index += sizeof(Int32);
+
+            int id = BitConverter.ToInt32(part1);
+
+
+            //第二个字段 Name, 长度为 20个字节              
+
+
+            var part2 = databytes.Slice(index, 20);
+
+            index += 20;
+
+            string name = System.Text.Encoding.UTF8.GetString(part2).TrimEnd('\0');
+
+            // 第三个字段 Data ,类型为  字符串指针  ,数据位置在 sizeof(int)+20
+
+            var part3 = databytes.Slice(index, sizeof(IntPtr));
+            index += sizeof(IntPtr);
+
+            var nDataPtr = BitConverter.ToInt64(part3);
+
+            IntPtr dataPrt = new IntPtr(nDataPtr);
+
+            string data = "";
+
+            if (IntPtr.Zero != dataPrt)
+            {
+                data = Marshal.PtrToStringUTF8(dataPrt);
+            }
+
+
+            //log to output
+            Log.Information("C#: OnCallBack4: id:{id},name:{name},dataprt:{dataPtr},Data:{data}", id, name, dataPrt, data);
+
+        }
+
+
+        private static void DoTestCallBack4()
+        {
+            Log.Information("测试 TestCallBack4 开始 !");
+            NativeLib.TestCallBack4();
+            Log.Information("测试 TestCallBack4 完成 !");
         }
 
 

@@ -25,17 +25,20 @@ typedef void (*CallBack3)(CallbackEventData*);
 extern void RegisterCallBack1(CallBack1 cb);
 extern void RegisterCallBack2(CallBack2 cb);
 extern void RegisterCallBack3(CallBack3 cb);
+extern void RegisterCallBack4(CallBack3 cb);
 
 // 定义调用委托函数
 extern void CallCallBack1(void* p);
 extern void CallCallBack2(char* p);
 extern void CallCallBack3(CallbackEventData* p);
+extern void CallCallBack4(CallbackEventData* p);
 
 
 // 定义全局变量 声明 
 extern CallBack1 _cb1;
 extern CallBack2 _cb2;
 extern CallBack3 _cb3;
+extern CallBack3 _cb4;
 
 
 // 定义日志记录函数声明

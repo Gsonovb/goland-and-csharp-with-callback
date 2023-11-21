@@ -78,7 +78,13 @@ public delegate void CallBack2(
 
 // 回调函数3 C结构体指针
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void CallBack3([MarshalUsing(typeof(CallBackEventDataMarshaller))]CallBackEventData data);
+public delegate void CallBack3([MarshalUsing(typeof(CallBackEventDataMarshaller))] CallBackEventData data);
+
+
+
+// 回调函数3 C结构体指针
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate void CallBack4(IntPtr data);
 
 
 
@@ -155,6 +161,23 @@ internal static partial class NativeLib
     [UnmanagedCallConv(CallConvs = new Type[] { typeof(CallConvCdecl) })]
     [LibraryImport(LibName, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(CustomStringMarshaller))]
     internal static partial void TestCallBack3();
+
+
+
+    // 初始化 回调函数4
+    //
+    //extern __declspec(dllexport) void InitCallBack4(void* cb, GoInt port);
+    [LibraryImport(LibName, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(CustomStringMarshaller))]
+    internal static partial void InitCallBack4(
+        [MarshalUsing(typeof(CustomStringMarshaller))]
+        CallBack4 cb, long port);
+
+    // 测试回调函数4
+    //
+    //extern __declspec(dllexport) void TestCallBack4();
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(CallConvCdecl) })]
+    [LibraryImport(LibName, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(CustomStringMarshaller))]
+    internal static partial void TestCallBack4();
 
 
 

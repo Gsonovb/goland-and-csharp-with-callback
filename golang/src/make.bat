@@ -11,4 +11,7 @@ ar cr libmycallback.a mycallback.o
 
 
 @REM go build -ldflags "-s -w" -g -buildmode=c-shared -o Golang.Ioc.Interop.dll 
-go build -ldflags "-s -w" -gcflags "-N -l" -buildmode=c-shared -o Golang.Ioc.Interop.dll
+@REM go build -ldflags "-s -w" -gcflags "-N -l" -buildmode=c-shared -o Golang.Ioc.Interop.dll
+go build  -gcflags "-N -l" -buildmode=c-shared -o Golang.Ioc.Interop.dll
+
+cv2pdb64 Golang.Ioc.Interop.dll

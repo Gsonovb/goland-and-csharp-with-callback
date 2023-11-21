@@ -6,6 +6,7 @@
 CallBack1 _cb1 = NULL;
 CallBack2 _cb2 = NULL;
 CallBack3 _cb3 = NULL;
+CallBack3 _cb4 = NULL;
 
 LogDelegate _cbLog = NULL;
 
@@ -48,6 +49,12 @@ void RegisterCallBack3(CallBack3 cb)
 {
     Log("OnRegisterCallBack3");
     _cb3 = cb;
+}
+
+void RegisterCallBack4(CallBack3 cb)
+{
+    Log("OnRegisterCallBack4");
+    _cb4 = cb;
 }
 
 // 定义调用委托函数
@@ -111,4 +118,24 @@ void CallCallBack3(CallbackEventData *p)
     // 调用委托函数
     (*_cb3)(p);
     Log("OnCall_CallBack3 end");
+}
+
+void CallCallBack4(CallbackEventData *p)
+{
+    Log("OnCall_CallBack4 start");
+    // 检测指针是否分配
+    if (_cb4 == NULL)
+    {
+        Log("CallBack4 is null");
+        return;
+    }
+
+    // 输出指针地址
+    char str[100];
+    sprintf(str, "OnCall_CallBack4 with p:%p", p);
+
+    Log(str);
+    // 调用委托函数
+    (*_cb4)(p);
+    Log("OnCall_CallBack4 end");
 }

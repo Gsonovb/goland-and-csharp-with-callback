@@ -140,6 +140,14 @@ extern __declspec(dllexport) void InitCallBack3(void* cb, GoInt port);
 //
 extern __declspec(dllexport) void TestCallBack3();
 
+// 初始化 回调函数4
+//
+extern __declspec(dllexport) void InitCallBack4(void* cb, GoInt port);
+
+// 测试回调函数4
+//
+extern __declspec(dllexport) void TestCallBack4();
+
 #ifdef __cplusplus
 }
 #endif

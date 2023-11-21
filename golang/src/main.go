@@ -403,64 +403,6 @@ func InitCallBack3(cb unsafe.Pointer, port int) {
 		C.RegisterCallBack3(C.CallBack3(cb))
 	}
 
-	//_cb3 = cb
-	// _gin3 = gin.Default()
-	// _gin3.GET("/callback3", func(c *gin.Context) {
-	// 	log.Print("GO: ", "GET callback3 is Called")
-
-	// 	c.JSON(200, gin.H{
-	// 		"message": "callback3 is Called",
-	// 	})
-	// })
-
-	// // 定义一个 POST 请求的路由 , 并获取BODY文本数据,并传入回调函数
-	// _gin3.POST("/callback3", func(c *gin.Context) {
-
-	// 	//check body is not null
-	// 	if c.Request.Body == nil {
-	// 		c.JSON(400, gin.H{
-	// 			"message": "no body Request",
-	// 		})
-	// 		return
-	// 	}
-
-	// 	//获取请求内容
-	// 	var event EventData
-	// 	err := c.BindJSON(&event)
-
-	// 	if err != nil {
-	// 		c.JSON(400, gin.H{
-	// 			"message": "Bad Request error data",
-	// 		})
-	// 		return
-	// 	}
-
-	// 	//log + event
-	// 	log.Print("GO: ", "POST callback3 is Called,"+event.EventName+",data:"+event.EventData)
-
-	// 	// // C结构体
-	// 	// var cEvent C.CallBackEvent
-
-	// 	// GoStringToCChar(event.EventId, &cEvent.EventId[0], 64)
-	// 	// GoStringToCChar(event.EventName, &cEvent.EventName[0], 32)
-	// 	// GoStringToCChar(event.EventTime, &cEvent.EventTime[0], 64)
-	// 	// GoStringToCChar(event.UserAppId, &cEvent.UserAppId[0], 64)
-
-	// 	// cEvent.EventData = C.CString(event.EventData)
-
-	// 	// 创建指针
-	// 	//var pEvent = &cEvent
-
-	// 	// 调用回调函数
-	// 	//go _cb3(pEvent)
-
-	// 	// 返回响应
-	// 	c.JSON(200, gin.H{
-	// 		"message": "OK",
-	// 	})
-	// })
-
-	// go _gin3.Run(fmt.Sprintf(":%d", port))
 }
 
 // 发送回调函数3
@@ -474,6 +416,8 @@ func SendCallBack3(event CallbackEventData) {
 	cEvent.id = C.int(event.Id)
 
 	GoStringToCChar(event.Name, &cEvent.name[0], 20)
+
+	cEvent.data = C.CString(event.Data) //传入指针
 
 	// 创建指针
 	var pEvent = &cEvent
@@ -506,6 +450,82 @@ func TestCallBack3() {
 	SendCallBack3(event)
 
 	log.Print("GO: ", "TestCallBack3 End!")
+}
+
+// 初始化 回调函数4
+//
+//export InitCallBack4
+func InitCallBack4(cb unsafe.Pointer, port int) {
+
+	// log with port
+	log.Print("GO: ", "InitCallBack4 port:"+fmt.Sprintf(":%d", port))
+
+	if cb == nil {
+		log.Print("GO: ", "Set cb prt  is nil !!")
+		return
+	} else {
+		// 转换成uintptr
+		adr := uintptr(cb)
+		log.Print("GO: ", "Set cb prt  is not nil !! adr:"+fmt.Sprintf("%x", adr))
+
+		C.RegisterCallBack4(C.CallBack3(cb))
+	}
+
+}
+
+// 测试回调函数4
+//
+//export TestCallBack4
+func TestCallBack4() {
+
+	log.Print("GO: ", "TestCallBack4 Start!")
+
+	var event CallbackEventData
+	event.Id = 2
+	event.Name = "TestCallBack4,测试回调4"
+	event.Data = "这是来自 TestCallBack4 的测试！"
+
+	SendCallBack4(event)
+
+	log.Print("GO: ", "TestCallBack4 End!")
+}
+
+// 发送回调函数4
+func SendCallBack4(event CallbackEventData) {
+
+	log.Print("GO: ", "SendCallBack4:  start  ")
+
+	// C结构体
+	var cEvent C.CallbackEventData
+
+	cEvent.id = C.int(event.Id)
+
+	GoStringToCChar(event.Name, &cEvent.name[0], 20)
+
+	datares := C.CString(event.Data) //获取 C Char 指针
+
+	adr2 := uintptr(unsafe.Pointer(datares))
+
+	cEvent.data = datares //传入指针
+
+	// 创建指针
+	var pEvent = &cEvent
+
+	adr1 := uintptr(unsafe.Pointer(pEvent))
+
+	log.Print("GO: ", "SendCallBack4 EventPrt adr:"+fmt.Sprintf("%x", adr1)+"Data ptr adr:"+fmt.Sprintf("%x", adr2))
+
+	// 调用回调函数
+	C.CallCallBack4(pEvent)
+
+	log.Print("GO: ", "SendCallBack4: Done	")
+
+	defer func() {
+
+		if err := recover(); err != nil {
+			log.Print("GO: ", "SendCallBack4 error:", err)
+		}
+	}()
 }
 
 // 定义函数 将Go字符串转换成C固定长度字符数组

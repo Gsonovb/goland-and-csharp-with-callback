@@ -15,11 +15,13 @@ public struct CallBackEventData
 {
 #nullable enable
 
+    [MarshalAs(UnmanagedType.I4)]
     public int Id;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
     public string Name;
 
+    [MarshalAs(UnmanagedType.LPUTF8Str)]
     public string? Data;
 
 
@@ -29,6 +31,17 @@ public struct CallBackEventData
     }
 
 }
+
+internal struct CallBackEventData2
+{
+    public int Id;
+
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+    public string Name;
+
+    public IntPtr Data;
+}
+
 
 [CustomMarshaller(typeof(CallBackEventData), MarshalMode.ManagedToUnmanagedIn, typeof(CallBackEventDataMarshaller))]
 [CustomMarshaller(typeof(CallBackEventData), MarshalMode.ManagedToUnmanagedOut, typeof(CallBackEventDataManagedToNativeOut))]
